@@ -48,4 +48,9 @@
         strategy:
           matrix:
             os: [ubuntu-latest, windows-latest, macOS-latest]
+
+        steps:
+          - name: Publish or Notify
+            run: |
+              echo "Build completed successfully on ${{ matrix.os }}"
         
