@@ -43,18 +43,17 @@
         run: |
           python movie_recommender_system.py
     
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: user/app:latest
+      - name: Build Docker Image Locally
+        run: |
+          docker build -t my-movie-recommender .
+
+      - name: Run Docker Image Locally
+        run: |
+          docker run -d -p 5000:5000 my-movie-recommender
+        # Optionally, you can run tests or check logs here
+
+    # To stop the container, you can add a step to stop it after testing
+      - name: Stop Docker Container
+        run: |
+          docker ps -q --filter "ancestor=my-movie-recommender" | xargs docker stop
         
