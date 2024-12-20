@@ -32,6 +32,9 @@
         run: |
           unzip movies.zip -d ./movies
         working-directory: ./  # Adjust if the zip file is in a subdirectory
+      - name: Verify Dataset Files
+        run: |
+          ls -R ./data
       - name: Run Movie Recommender Script
         run: |
           python movie_recommender_system.py
