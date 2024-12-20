@@ -43,15 +43,18 @@
         run: |
           python movie_recommender_system.py
     
-    publish:
-        runs-on: ${{matrix.os}}
-        needs: build
-        strategy:
-          matrix:
-            os: [ubuntu-latest, windows-latest, macOS-latest]
-
-        steps:
-          - name: Publish or Notify
-            run: |
-              echo "Build completed successfully on ${{ matrix.os }}"
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: user/app:latest
         
