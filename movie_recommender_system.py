@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import ast
 
-movies = pd.read_csv('tmdb_5000_movies.csv')
-credits = pd.read_csv('tmdb_5000_credits.csv')
+movies = pd.read_csv('./movies/tmdb_5000_movies.csv')
+credits = pd.read_csv('./movies/tmdb_5000_credits.csv')
 
 movies = movies.merge(credits, on ='title')
 
