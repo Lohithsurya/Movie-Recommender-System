@@ -16,18 +16,10 @@ credits = pd.read_csv('./movies/tmdb_5000_credits.csv')
 
 movies = movies.merge(credits, on ='title')
 
-movies.shape
-movies.info()
-
 #genres, id, keywords, original_title, overview (coz content based recom, if will be good if the summary is same), cast,crew
 
 movies = movies[['id','title','overview', 'genres','keywords', 'cast', 'crew' ]]
-
-movies.head(1)
-
 """Data Preprocessing (creating a new datafram with 3 columns => id, title, tags )"""
-
-movies.isnull().sum()
 
 movies.dropna(inplace=True)
 
@@ -41,11 +33,11 @@ def convert (obj):
 
 movies['genres'] = movies['genres'].apply(convert)
 
-movies.head()
+
 
 movies['keywords'] = movies['keywords'].apply(convert)
 
-movies.head()
+
 
 def convert_cast (obj):
   L = []
@@ -60,7 +52,7 @@ def convert_cast (obj):
 
 movies['cast'] = movies['cast'].apply(convert_cast)
 
-movies.head()
+
 
 def fetch_director(obj):
   L =[]
@@ -72,11 +64,11 @@ def fetch_director(obj):
 
 movies['crew'] = movies['crew'].apply(fetch_director)
 
-movies.head()
+
 
 movies['overview'] = movies['overview'].apply(lambda x:x.split())
 
-movies.head()
+
 
 movies['genres'] = movies['genres'].apply(lambda x:[i.replace(" ","") for i in x])
 movies['keywords'] = movies['keywords'].apply(lambda x:[i.replace(" ","") for i in x])
@@ -87,11 +79,6 @@ movies['tags'] = movies['overview'] + movies['genres'] + movies['keywords'] + mo
 movies['tags'] = movies['tags'].apply(lambda x:" ".join(x))
 movies['tags'] = movies['tags'].apply(lambda x: x.lower())
 
-movies.head()
-
-movies = movies[['id','title','tags']]
-
-movies
 
 
 
@@ -113,7 +100,7 @@ cv = CountVectorizer(max_features = 5000, stop_words = 'english')
 
 vectors = cv.fit_transform(movies['tags']).toarray()
 
-vectors.shape
+
 
 cv.get_feature_names_out()
 
@@ -123,14 +110,45 @@ similarity = cosine_similarity(vectors)
 
 sorted(list(enumerate(similarity[2])),reverse=True,key = lambda x: x[1])[1:6]
 
-def recommend(movie):
-  movie_index = movies[movies['title'] == movie].index[0]
-  distances = similarity[movie_index]
-  movies_list = sorted(list(enumerate(distances)),reverse=True,key = lambda x: x[1])[1:6]
 
-  for i in movies_list:
-    print(movies.iloc[i[0]].title)
+def recommend(movie, criteria="tags"):
+    # Map criteria to the appropriate column and similarity matrix
+    feature_column = {
+        "story": "overview",
+        "genres": "genres",
+        "keywords": "keywords",
+        "actors": "cast",
+        "director": "crew",
+        "tags": "tags",  # Default
+    }.get(criteria.lower(), "tags")
+
+    if feature_column not in movies.columns:
+        raise KeyError(f"The column '{feature_column}' is missing in the dataset.")
+
+    # Use precomputed similarity matrix based on selected criteria
+    similarity_matrix = similarity.get(feature_column)
+    
+    if similarity_matrix is None:
+        raise ValueError(f"No similarity matrix found for the selected feature: {criteria}")
+    
+    # Find the movie index
+    try:
+        movie_index = movies[movies["title"] == movie].index[0]
+    except IndexError:
+        raise ValueError(f"The movie '{movie}' was not found in the dataset.")
+
+    distances = similarity_matrix[movie_index]
+    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
+
+    # Get recommendations
+    recommended_movies = [movies.iloc[i[0]].title for i in movies_list]
+    for i in recommended_movies:
+        print(i)
+
+# Example Usage
+recommend('Batman Begins', criteria='director')  # Recommendations based on director
+
 
 recommend('Batman Begins')
 
-movies
+
