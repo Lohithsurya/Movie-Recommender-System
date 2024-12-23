@@ -1,7 +1,6 @@
-FROM python:3.10
+FROM python:3.9-slim
 WORKDIR /app
 COPY . /app
-RUN pip install -r requirements.txt
-RUN apt-get update
-RUN ls -R ./movies
-CMD ["python", "movie_recommender_system.py"]
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 8501
+CMD ["streamlit", "run", "app.py", "--server.enableCORS", "false"]
